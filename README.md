@@ -9,6 +9,12 @@ A python implementation of r-scran::computeSumFactors: normalization by deconvol
 pip install git+https://github.com/sfortma2/scranPY.git
 ````
 
+# Basic Usage
+````
+import scranPY
+scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, stopwatch=True, 
+    plotting=True, lower_bound=0.2, normalize_counts=False, log1p=False, layer=None, verbose=False, save_plots_dir=None)
+````
 
 
 # Original Credit
