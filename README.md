@@ -30,7 +30,7 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
         'QR' uses numpy.linalg.qr to compute qr factorization. This is analogous to the current implementation of r-scran::computeSumFactors but it is slow b/c requires dense matrices. 
         'CVXPY' uses the cvxpy module to construct a quadratic optimization function for solving linear equations. This is the faster, recommended option.
     5. sizes: A NumPy array of pool sizes to use for normalization (default: np.arange(21, 102, 5)).
-    6. max_size: The maximum size of a cluster before being split into smaller chunks for computations (default: 3000).
+    6. max_size: The maximum size of a cluster before being split into smaller chunks for parallel computations (default: 3000).
     7. min_mean: The minimum mean gene expression level to consider for reference cells. If None, will automatically determine the appropriate min_mean (default: None).
     8. plotting: Whether to plot the results (bool; default: True).
     9. lower_bound: The lower bound for 'constraints' in the CVXPY algorithm. This is a hyperparameter that can increase the scaling of the smallest returned size factors. (range: 0 to 0.5; default: 0.1).
