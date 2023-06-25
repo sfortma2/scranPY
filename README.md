@@ -51,12 +51,16 @@ import scranPY
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, plotting=True,
     lower_bound=0.4, normalize_counts=False, log1p=False, layer=None, verbose=False, save_plots_dir='/data/user/sfortma2')
 ```
-![scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/72f78c88-ae76-4f17-893a-141b52e0e6be)
+![scranPY_normalization_readme](https://github.com/sfortma2/scranPY/assets/56206488/2dfd8030-741e-4938-a7f1-2f8378970add)
+
 
 ```
 Comparison to size factors computed using r-scran::computeSumeFactors()
 ```
-![scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/72f78c88-ae76-4f17-893a-141b52e0e6be)
+![scran_normalization_readme](https://github.com/sfortma2/scranPY/assets/56206488/23621ee2-2961-414c-a514-898492364deb)
+
+![comparison_readme](https://github.com/sfortma2/scranPY/assets/56206488/430ba2fc-a758-447a-b524-8bdf6693c0cc)
+
 
 
 # Original R implementation
