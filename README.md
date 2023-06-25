@@ -10,6 +10,9 @@ A python implementation of r-scran::computeSumFactors: normalization by deconvol
 ```
 pip install git+https://github.com/sfortma2/scranPY.git
 ```
+Requirements:
+   - scanpy
+   - cvxpy
 
 # Basic Usage
 
