@@ -11,12 +11,6 @@ setup(
     install_requires=[
         # List any dependencies your module requires
         'scanpy',
-        'anndata',
-        'numpy',
-        'pandas',
-        'multiprocessing',
-        'scipy',
-        'cvxpy',
-        'matplotlib',
+        'cvxpy'
     ],
 )
