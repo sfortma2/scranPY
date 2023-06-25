@@ -47,6 +47,9 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
 import scranPY
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, stopwatch=True, 
     plotting=True, lower_bound=0.2, normalize_counts=False, log1p=False, layer=None, verbose=False, save_plots_dir=None)
+
+![scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/72f78c88-ae76-4f17-893a-141b52e0e6be)
+
 ```
 
 
