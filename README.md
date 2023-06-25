@@ -50,13 +50,13 @@ scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algori
 ```
 ![scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/72f78c88-ae76-4f17-893a-141b52e0e6be)
 
-```ruby
+```
 Comparison to size factors computed using r-scran::computeSumeFactors()
 ```
 ![scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/72f78c88-ae76-4f17-893a-141b52e0e6be)
 
 
-# Original Credit
+# Original R implementation
 
 L Lun, A.T., Bach, K. and Marioni, J.C., 2016. Pooling across cells to normalize single-cell RNA sequencing data with many zero counts. Genome biology, 17(1), pp.1-14.
 
