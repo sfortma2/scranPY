@@ -67,4 +67,5 @@ Comparison to size factors computed using r-scran::computeSumeFactors()
 
 L Lun, A.T., Bach, K. and Marioni, J.C., 2016. Pooling across cells to normalize single-cell RNA sequencing data with many zero counts. Genome biology, 17(1), pp.1-14.
 
+see https://github.com/MarioniLab/scran for more details on the original R implementation.
 
