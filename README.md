@@ -13,7 +13,7 @@ pip install git+https://github.com/sfortma2/scranPY.git
 
 # Basic Usage
 
-```
+```ruby
 def compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='CVXPY', sizes=np.arange(21, 102, 5), max_size=3000, min_mean=None, plotting=True, lower_bound=0.1, 
                          normalize_counts=False, log1p=False, layer='scranPY', verbose=True, save_plots_dir=None, stopwatch=True):
   """
