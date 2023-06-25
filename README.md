@@ -43,7 +43,7 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
     15. stopwatch: Whether to time the function. (bool; default: True).
 
   Returns:
-    A NumPy array of size factors and stores size factors in passed adata as adata.obs['size_factors'].
+    A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
 ```
 
 ```ruby
