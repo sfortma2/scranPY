@@ -1,4 +1,5 @@
-# scranPY
+# scranPY ![scrappy](https://github.com/sfortma2/scranPY/assets/56206488/8aa9985a-70ba-4c9e-90aa-d1d667ae8414)
+
 A python implementation of r-scran::computeSumFactors: normalization by deconvolution for single-cell RNA-sequencing.
  
  
