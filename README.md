@@ -20,7 +20,7 @@ Package Requirements:
 compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='CVXPY', sizes=np.arange(21, 102, 5), 
    max_size=3000, min_mean=None, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', 
    verbose=True, save_plots_dir=None, stopwatch=True):
-  """
+
   Args:
     1. adata: An AnnData file (unnormalized, non-log transformed counts in active adata.X matrix).
     2. clusters: An observation in adata.obs containing cluster annotations (None or Str; default: None).
@@ -43,7 +43,6 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
 
   Returns:
     A NumPy array of size factors and stores size factors in passed adata as adata.obs['size_factors'].
-  """
 ```
 
 ```ruby
