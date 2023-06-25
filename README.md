@@ -60,7 +60,7 @@ Comparison to size factors computed using r-scran::computeSumeFactors()
 ![scran_normalization_readme](https://github.com/sfortma2/scranPY/assets/56206488/23621ee2-2961-414c-a514-898492364deb)
 
 <p align="center">
-   <img src="https://github.com/sfortma2/scranPY/assets/56206488/430ba2fc-a758-447a-b524-8bdf6693c0cc" width="368.94" height="400">
+   <img src="https://github.com/sfortma2/scranPY/assets/56206488/430ba2fc-a758-447a-b524-8bdf6693c0cc" width="276.6" height="300">
 </p>
 
 # Original R implementation
