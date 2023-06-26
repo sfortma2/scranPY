@@ -1,3 +1,4 @@
-.ipynb linguist-documentation
+
 * linguist-vendored
 *.py linguist-vendored=true
+.ipynb linguist-documentation
