@@ -21,7 +21,7 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
   Args:
     1. adata: An AnnData file (unnormalized, non-log transformed counts in active adata.X matrix).
     2. clusters: An observation in adata.obs containing cluster annotations (None or Str; default: None).
-    3. parallelize: Whether to parallelize the computation (bool; default: True).
+    3. parallelize: Whether to parallelize the computation. If False, samples will run sequentially (bool; default: True).
     4. algorithm: The algorithm to use for solving linear equations (str: 'CVXPY' or 'QR'; default: 'CVXPY').
         'QR' uses numpy.linalg.qr to compute qr factorization. This is analogous to the current implementation of r-scran::computeSumFactors but it is slow b/c requires dense matrices. 
         'CVXPY' uses the cvxpy module to construct a quadratic optimization function for solving linear equations. This is the faster, recommended option.
