@@ -1,3 +1,4 @@
 * linguist-vendored
-scranPY/*.py linguist-vendored=true
-tutorial/*.ipynb linguist-vendored=false
+*.py linguist-vendored=true
+./scranPY/*.py linguist-vendored=true
+./tutorial/*.ipynb linguist-vendored=false
