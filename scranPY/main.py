@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import scanpy as sc
 from anndata import AnnData
 import numpy as np
@@ -179,204 +180,193 @@ def solve_quadratic_cvxpy(design, output, cur_cells, lower_bound):
     return solution
 
 def QR_decomposition(design, output):
-    Q, R = np.linalg.qr(design.T.toarray())
-    #Q, R = qr(design.T.toarray())
-    y = Q.T @ output
-    coef, residuals, rank, s = np.linalg.lstsq(R, y, rcond=None)
-    return coef
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        Q, R = np.linalg.qr(design.T.toarray())
+        #Q, R = qr(design.T.toarray())
+        y = Q.T @ output
+        coef, residuals, rank, s = np.linalg.lstsq(R, y, rcond=None)
+        return coef
 
-if __name__ == '__main__':
-    import multiprocessing as mp
 
-    mp.set_start_method('spawn')
+def process_cluster(args):
+    clust, indices, exprs, lib_sizes, min_mean, sizes, algorithm, lower_bound = args
+    curdex = indices[clust]
+    cur_exprs = exprs[curdex]
+    cur_libs = lib_sizes[curdex]
+    cur_cells = len(curdex)
+    ave_cell = np.mean(cur_exprs, axis=0) * np.mean(cur_libs)
+    high_ave = min_mean <= ave_cell
+    use_ave_cell = ave_cell
+    if not all(high_ave):
+        cur_exprs = cur_exprs[:, high_ave]
+        use_ave_cell = use_ave_cell[high_ave]
+    ngenes = np.sum(high_ave)
+    sphere = generate_sphere(cur_libs)
+    sizes = sizes[sizes <= exprs.shape[0]]
+    design, output = _create_linear_system(ngenes, cur_cells, cur_exprs, sphere, sizes, use_ave_cell)
+    if algorithm=='QR':
+        final_nf = QR_decomposition(design, output)
+    if algorithm=='CVXPY':
+        final_nf = solve_quadratic_cvxpy(design.T, output, cur_cells, lower_bound)
+    if all(final_nf > 0) == False:
+        print('Not all size factors for clust = ', clust, 'are greater than 0. Cleaning size factors.')
+        final_nf = clean_size_factors(final_nf, cur_exprs.sum(axis=1))
+    return final_nf, ave_cell, np.mean(cur_libs)
+    
 
-    def process_cluster(args):
-        clust, indices, exprs, lib_sizes, min_mean, sizes, algorithm, verbose, lower_bound = args
-        curdex = indices[clust]
-        cur_exprs = exprs[curdex]
-        cur_libs = lib_sizes[curdex]
-        cur_cells = len(curdex)
-        ave_cell = np.mean(cur_exprs, axis=0) * np.mean(cur_libs)
-        high_ave = min_mean <= ave_cell
-        use_ave_cell = ave_cell
-        if not all(high_ave):
-            cur_exprs = cur_exprs[:, high_ave]
-            use_ave_cell = use_ave_cell[high_ave]
-        ngenes = np.sum(high_ave)
-        sphere = generate_sphere(cur_libs)
-        sizes = sizes[sizes <= exprs.shape[0]]
-        design, output = _create_linear_system(ngenes, cur_cells, cur_exprs, sphere, sizes, use_ave_cell)
-        if algorithm=='QR':
-            final_nf = QR_decomposition(design, output)
-            if verbose == True:
-                print('Used QR to solve matrix decomposition for clust = ', clust)
-        if algorithm=='CVXPY':
-            final_nf = solve_quadratic_cvxpy(design.T, output, cur_cells, lower_bound)
-            if verbose == True:
-                print('Used CVXPY to solve quadratic for clust = ', clust)
+def compute_sum_factors(adata=AnnData, sizes=np.arange(21, 102, 5), clusters=None, min_mean=None, max_size=3000, parallelize=True, algorithm='CVXPY', stopwatch=True, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', save_plots_dir=None):
     
-        if all(final_nf > 0) == False:
-            print('Not all size factors for clust = ', clust, 'are greater than 0. Cleaning size factors.')
-            final_nf = clean_size_factors(final_nf, cur_exprs.sum(axis=1))
-        return final_nf, ave_cell, np.mean(cur_libs)
-        
-    
-    def compute_sum_factors(adata=AnnData, sizes=np.arange(21, 102, 5), clusters=None, min_mean=None, max_size=3000, parallelize=True, algorithm='CVXPY', stopwatch=True, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', verbose=True, save_plots_dir=None):
-        
-        start_time = time.time()
-        clusters = adata.obs[clusters].astype('category')
-    
-        if clusters is not None:
-            print('Current smallest cluster = ', clusters.value_counts().min(),' cells.')
-            if clusters.value_counts().min() < sizes.max(): 
-                if 41 > clusters.value_counts().min(): ## we want at least 5 pool sizes to compare with
-                    if 30 > clusters.value_counts().min():
-                        raise ValueError("You're passing a cluster that is too small. Minimum size is 30 cells.")
-                    else:
-                        print("Warning: you're passing a very small cluster that contains 40 or less cells. Pool sizes have been readjusted.")
-                        sizes=np.arange(11, clusters.value_counts().min(), 5)
-                        sizes = np.array(sizes, dtype=int)
+    start_time = time.time()
+    clusters = adata.obs[clusters].astype('category')
+
+    if clusters is not None:
+        print('Current smallest cluster = ', clusters.value_counts().min(),' cells.')
+        if clusters.value_counts().min() < sizes.max(): 
+            if 41 > clusters.value_counts().min(): ## we want at least 5 pool sizes to compare with
+                if 30 > clusters.value_counts().min():
+                    raise ValueError("You're passing a cluster that is too small. Minimum size is 30 cells.")
                 else:
-                    print("Warning: you're passing a small cluster that contains less than 100 cells. Pool sizes have been readjusted.")
-                    sizes=np.arange(21, clusters.value_counts().min(), 5)
+                    print("Warning: you're passing a very small cluster that contains 40 or less cells. Pool sizes have been readjusted.")
+                    sizes=np.arange(11, clusters.value_counts().min(), 5)
                     sizes = np.array(sizes, dtype=int)
             else:
+                print("Warning: you're passing a small cluster that contains less than 100 cells. Pool sizes have been readjusted.")
+                sizes=np.arange(21, clusters.value_counts().min(), 5)
                 sizes = np.array(sizes, dtype=int)
-            
-        ncells = adata.X.shape[0] ##1
-        if (max_size is not None) & (clusters is not None):
-            clusters = limit_cluster_size(clusters, max_size=max_size)
-        if clusters is not None: ##2
-            indices = np.arange(adata.X.shape[0]) if clusters is None else [np.where(clusters == c)[0] for c in np.unique(clusters)]
         else:
-            indices = [np.arange(ncells)]
-        print('Using max_size = ',max_size, ', clusters have been split into ', len(indices), ' clusters.')
-        lib_sizes = np.sum(adata.X, axis=1) ##3
-        lib_sizes = lib_sizes / np.mean(lib_sizes) 
-        exprs = (adata.X.T / lib_sizes).T ##4
-        min_mean = guess_min_mean(adata.X, min_mean=min_mean) ##5
-        print('min_mean = ', min_mean)
-        clust_nf, clust_profile, clust_libsize = [], [], []
-        warned_size, warned_neg = False, False
+            sizes = np.array(sizes, dtype=int)
         
-        if parallelize==True:
-            with mp.Pool() as pool:
-                results = []
-                for i, result in enumerate(pool.imap(process_cluster, [(clust, indices, exprs, lib_sizes, min_mean, sizes, algorithm, verbose, lower_bound) for clust in range(len(indices))])):
-                    results.append((i, result))
-                results.sort(key=lambda x: x[0])
-                for _, result in results:
-                    final_nf, ave_cell, mean_lib = result
-                    clust_nf.append(final_nf)
-                    clust_profile.append(ave_cell)
-                    clust_libsize.append(mean_lib)
-        else:
-            for clust in range(len(indices)):
-                curdex = indices[clust]
-                cur_exprs = exprs[curdex]
-                cur_libs = lib_sizes[curdex]
-                cur_cells = len(curdex)
-                ave_cell = np.mean(cur_exprs, axis=0)*np.mean(cur_libs)
-                high_ave = min_mean <= ave_cell
-                use_ave_cell = ave_cell
-                if not all(high_ave):
-                    cur_exprs = cur_exprs[:,high_ave]
-                    use_ave_cell = use_ave_cell[high_ave]
-                ngenes = np.sum(high_ave)
-                sphere = generate_sphere(cur_libs)
-                sizes = sizes[sizes <= exprs.shape[0]]
-                design, output = _create_linear_system(ngenes, cur_cells, cur_exprs, sphere, sizes, use_ave_cell)
-                if algorithm=='QR':
-                    final_nf = QR_decomposition(design, output)
-                    if verbose == True:
-                        print('Used QR to solve matrix decomposition for clust = ', clust)
-                if algorithm=='CVXPY':
-                    final_nf = solve_quadratic_cvxpy(design.T, output, cur_cells, lower_bound)
-                    if verbose == True:
-                        print('Used CVXPY to solve quadratic for clust = ', clust)
-                
-                if all(final_nf > 0) == False:
-                    print('Not all size factors for clust = ', clust, 'are greater than 0. Cleaning size factors.')
-                    final_nf = clean_size_factors(final_nf, cur_exprs.sum(axis=1))
+    ncells = adata.X.shape[0] ##1
+    if (max_size is not None) & (clusters is not None):
+        clusters = limit_cluster_size(clusters, max_size=max_size)
+    if clusters is not None: ##2
+        indices = np.arange(adata.X.shape[0]) if clusters is None else [np.where(clusters == c)[0] for c in np.unique(clusters)]
+    else:
+        indices = [np.arange(ncells)]
+    print('Using max_size = ',max_size, ', clusters have been split into ', len(indices), ' clusters.')
+    lib_sizes = np.sum(adata.X, axis=1) ##3
+    lib_sizes = lib_sizes / np.mean(lib_sizes) 
+    exprs = (adata.X.T / lib_sizes).T ##4
+    min_mean = guess_min_mean(adata.X, min_mean=min_mean) ##5
+    print('min_mean = ', min_mean)
+    clust_nf, clust_profile, clust_libsize = [], [], []
+    warned_size, warned_neg = False, False
+    
+    if parallelize==True:
+        with mp.Pool() as pool:
+            results = []
+            for i, result in enumerate(pool.imap(process_cluster, [(clust, indices, exprs, lib_sizes, min_mean, sizes, algorithm, lower_bound) for clust in range(len(indices))])):
+                results.append((i, result))
+            results.sort(key=lambda x: x[0])
+            for _, result in results:
+                final_nf, ave_cell, mean_lib = result
                 clust_nf.append(final_nf)
                 clust_profile.append(ave_cell)
-                clust_libsize.append(np.mean(cur_libs))
-            
-        non_zeroes = np.array([np.sum(x > 0) for x in clust_profile])
-        ref_col = np.argmax(non_zeroes)  
-    
-        rescaling_factors = rescale_clusters(mean_prof=clust_profile, ref_col=ref_col, min_mean=min_mean)
+                clust_libsize.append(mean_lib)
+    else:
         for clust in range(len(indices)):
-                clust_nf[clust] = clust_nf[clust] * rescaling_factors[clust]
+            curdex = indices[clust]
+            cur_exprs = exprs[curdex]
+            cur_libs = lib_sizes[curdex]
+            cur_cells = len(curdex)
+            ave_cell = np.mean(cur_exprs, axis=0)*np.mean(cur_libs)
+            high_ave = min_mean <= ave_cell
+            use_ave_cell = ave_cell
+            if not all(high_ave):
+                cur_exprs = cur_exprs[:,high_ave]
+                use_ave_cell = use_ave_cell[high_ave]
+            ngenes = np.sum(high_ave)
+            sphere = generate_sphere(cur_libs)
+            sizes = sizes[sizes <= exprs.shape[0]]
+            design, output = _create_linear_system(ngenes, cur_cells, cur_exprs, sphere, sizes, use_ave_cell)
+            if algorithm=='QR':
+                final_nf = QR_decomposition(design, output)
+            if algorithm=='CVXPY':
+                final_nf = solve_quadratic_cvxpy(design.T, output, cur_cells, lower_bound)
+            if all(final_nf > 0) == False:
+                print('Not all size factors for clust = ', clust, 'are greater than 0. Cleaning size factors.')
+                final_nf = clean_size_factors(final_nf, cur_exprs.sum(axis=1))
+            clust_nf.append(final_nf)
+            clust_profile.append(ave_cell)
+            clust_libsize.append(np.mean(cur_libs))
         
-        final_sf = np.full(ncells, np.nan)
-        final_sf[np.concatenate(indices)] = np.concatenate(clust_nf)
-        final_sf = final_sf * lib_sizes
-        is_pos = (final_sf > 0) & (~np.isnan(final_sf))
-        final_sf = final_sf/np.mean(final_sf[is_pos])
-        
-        if stopwatch == True:
-            print('---',round((time.time() - start_time)/60, 2),'mins ---')
-        
-        adata.obs['size_factors'] = final_sf
-        print('size factor min = ', adata.obs['size_factors'].min())
-        print('size factor max = ', adata.obs['size_factors'].max())
+    non_zeroes = np.array([np.sum(x > 0) for x in clust_profile])
+    ref_col = np.argmax(non_zeroes)  
+
+    rescaling_factors = rescale_clusters(mean_prof=clust_profile, ref_col=ref_col, min_mean=min_mean)
+    for clust in range(len(indices)):
+            clust_nf[clust] = clust_nf[clust] * rescaling_factors[clust]
     
-        if plotting == True:
-            import matplotlib.pyplot as plt
-            from matplotlib import gridspec
-            from matplotlib.cm import ScalarMappable
+    final_sf = np.full(ncells, np.nan)
+    final_sf[np.concatenate(indices)] = np.concatenate(clust_nf)
+    final_sf = final_sf * lib_sizes
+    is_pos = (final_sf > 0) & (~np.isnan(final_sf))
+    final_sf = final_sf/np.mean(final_sf[is_pos])
+    
+    if stopwatch == True:
+        print('---',round((time.time() - start_time)/60, 2),'mins ---')
+    
+    adata.obs['size_factors'] = final_sf
+    print('size factor min = ', adata.obs['size_factors'].min())
+    print('size factor max = ', adata.obs['size_factors'].max())
+
+    if plotting == True:
+        import matplotlib.pyplot as plt
+        from matplotlib import gridspec
+        from matplotlib.cm import ScalarMappable
+        
+        fig = plt.figure(figsize=(14, 3))
+        gs = gridspec.GridSpec(1, 4, width_ratios=[10, 10, 9, 1])
+
+        adata.obs[' Total Transcripts '] = adata.X.sum(1)
+        adata.obs[' Total Genes '] = (adata.X > 0).sum(1)
+        adata.obs[' log(Total Transcripts) '] = np.log(adata.X.sum(1))
+        adata.obs[' log(Total Genes) '] = np.log((adata.X > 0).sum(1))
+
+        ax1 = plt.subplot(gs[0])
+        ax2 = plt.subplot(gs[1])
+        ax3 = plt.subplot(gs[2])
+        cax = plt.subplot(gs[3])
+        p1 = sc.pl.scatter(adata, x='size_factors', y=' Total Transcripts ', show=False, ax=ax1)
+        p2 = sc.pl.scatter(adata, x='size_factors', y=' Total Genes ', show=False, ax=ax2)
+        p3 = sc.pl.scatter(adata, x=' log(Total Genes) ', y=' log(Total Transcripts) ', 
+                        color='size_factors', color_map='turbo', show=False, ax=ax3)
+                        
+        del adata.obs[' Total Transcripts ']
+        del adata.obs[' Total Genes ']
+        del adata.obs[' log(Total Transcripts) ']
+        del adata.obs[' log(Total Genes) ']
+
+        cmap = plt.get_cmap('turbo')
+        norm = plt.Normalize(vmin=p3.collections[0].get_array().min(), vmax=p3.collections[0].get_array().max())
+        sm = ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        plt.subplots_adjust(wspace=0.75)
+        plt.colorbar(sm, cax=cax)
+        p3.collections[0].colorbar.remove()
+        cax_pos = cax.get_position()
+        cax.set_position([cax_pos.x0 - 0.08, cax_pos.y0, cax_pos.width, cax_pos.height])
+        if save_plots_dir is not None:
+            plt.savefig(save_plots_dir + '/scranPY_normalization.pdf', bbox_inches="tight", dpi=300) 
+            temp = save_plots_dir + '/scranPY_normalization.pdf'
+            print('Saved plots to:',temp)
+            del temp
             
-            fig = plt.figure(figsize=(14, 3))
-            gs = gridspec.GridSpec(1, 4, width_ratios=[10, 10, 9, 1])
+        plt.show()
+        plt.clf()
     
-            adata.obs[' Total Transcripts '] = adata.X.sum(1)
-            adata.obs[' Total Genes '] = (adata.X > 0).sum(1)
-            adata.obs[' log(Total Transcripts) '] = np.log(adata.X.sum(1))
-            adata.obs[' log(Total Genes) '] = np.log((adata.X > 0).sum(1))
-    
-            ax1 = plt.subplot(gs[0])
-            ax2 = plt.subplot(gs[1])
-            ax3 = plt.subplot(gs[2])
-            cax = plt.subplot(gs[3])
-            p1 = sc.pl.scatter(adata, x='size_factors', y=' Total Transcripts ', show=False, ax=ax1)
-            p2 = sc.pl.scatter(adata, x='size_factors', y=' Total Genes ', show=False, ax=ax2)
-            p3 = sc.pl.scatter(adata, x=' log(Total Genes) ', y=' log(Total Transcripts) ', 
-                            color='size_factors', color_map='turbo', show=False, ax=ax3)
-                            
-            del adata.obs[' Total Transcripts ']
-            del adata.obs[' Total Genes ']
-            del adata.obs[' log(Total Transcripts) ']
-            del adata.obs[' log(Total Genes) ']
-    
-            cmap = plt.get_cmap('turbo')
-            norm = plt.Normalize(vmin=p3.collections[0].get_array().min(), vmax=p3.collections[0].get_array().max())
-            sm = ScalarMappable(cmap=cmap, norm=norm)
-            sm.set_array([])
-            plt.subplots_adjust(wspace=0.75)
-            plt.colorbar(sm, cax=cax)
-            p3.collections[0].colorbar.remove()
-            cax_pos = cax.get_position()
-            cax.set_position([cax_pos.x0 - 0.08, cax_pos.y0, cax_pos.width, cax_pos.height])
-            if save_plots_dir is not None:
-                plt.savefig(save_plots_dir + '/scranPY_normalization.pdf', bbox_inches="tight", dpi=300) 
-                temp = save_plots_dir + '/scranPY_normalization.pdf'
-                print('Saved plots to:',temp)
-                del temp
-                
-            plt.show()
-            plt.clf()
-        
-        if normalize_counts == True:
-            print('Normalizing active adata.X matrix by dividing counts by size factors')
-            adata.X /= adata.obs['size_factors'].values[:,None]
-            if log1p == True:
-                print('Transforming normalized adata.X using natural log +1')
-                sc.settings.verbosity = 0
-                sc.pp.log1p(adata)
-                
-        if (normalize_counts == True) & (layer is not None):
-            print("Storing normalized (and log transformed if 'log1p=True') adata.X as layer =",layer)
-            adata.layers[layer] = adata.X.copy() 
-    
-        return final_sf
+    if normalize_counts == True:
+        print('Normalizing active adata.X matrix by dividing counts by size factors')
+        adata.X /= adata.obs['size_factors'].values[:,None]
+        if log1p == True:
+            print('Transforming normalized adata.X using natural log +1')
+            sc.settings.verbosity = 0
+            sc.pp.log1p(adata)
+            
+    if (normalize_counts == True) & (layer is not None):
+        print("Storing normalized (and log transformed if 'log1p=True') adata.X as layer =",layer)
+        adata.layers[layer] = adata.X.copy() 
+
+    return final_sf
