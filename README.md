@@ -15,7 +15,7 @@ Package Requirements:
 ```ruby
 compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='CVXPY', sizes=np.arange(21, 102, 5), 
    max_size=3000, min_mean=None, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', 
-   verbose=True, save_plots_dir=None, stopwatch=True):
+   save_plots_dir=None, stopwatch=True):
 ```
 ```
   Args:
@@ -34,9 +34,8 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
     10. normalize_counts: Whether to normalize the active adata.X matrix by dividing the matrix by the returned size factors. (bool; default: False).
     11. log1p: Whether to np.log1p transform the active adata.X matrix after normalization. Only relevant if normalize_counts=True. (bool; default: False).
     12. layer: The layer to store normalized counts (only relevant if normalize_counts=True). (str or None; default: 'scranPY').
-    13. verbose: Whether to print progress while solving linear equations. (bool; default: True).
-    14. save_plots_dir: The directory to save the plots. (str; default: None).
-    15. stopwatch: Whether to time the function. (bool; default: True).
+    13. save_plots_dir: The directory to save the plots. (str; default: None).
+    14. stopwatch: Whether to time the function. (bool; default: True).
 
   Returns:
     A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
