@@ -44,7 +44,7 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
 
 # Example
 
-Dataset contains 27,555 cells and 13,806 genes
+Dataset containing 27,555 cells and 13,806 genes
 
 ```ruby
 import scranPY
