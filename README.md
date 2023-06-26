@@ -42,7 +42,9 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
     A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
 ```
 
-# Example Dataset with 27,555 cells
+# Example
+
+Dataset contains 27,555 cells and 13,806 genes
 
 ```ruby
 import scranPY
