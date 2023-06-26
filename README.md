@@ -73,6 +73,7 @@ size_factors = computeSumFactors(SingleCellExperiment::SingleCellExperiment(list
                                  clusters=clusters, min.mean=0.1)
 ```
 --- 4.29 mins --- (r-scran::computeSumFactors())
+
 --- 6.02 mins --- (importing data to R, r-scran::computeSumFactors(), and exporting size factors)
 ![r-scran__comparison](https://github.com/sfortma2/scranPY/assets/56206488/16a6bbee-1815-4016-a9db-a4b1a259ef35)
 
