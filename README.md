@@ -47,19 +47,27 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
 ```ruby
 import scranPY
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, plotting=True,
-    lower_bound=0.4, normalize_counts=False, log1p=False, layer=None, verbose=False, save_plots_dir='/dir/to/save')
+    lower_bound=0.4, normalize_counts=False, save_plots_dir='/dir/to/save')
 ```
-![scranPY_normalization_readme](https://github.com/sfortma2/scranPY/assets/56206488/2dfd8030-741e-4938-a7f1-2f8378970add)
+![CVXPY scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/491188c4-45d5-4c84-9bae-7abbcb88523c)
+
+
+```ruby
+scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='QR', max_size=3000, 
+    plotting=True, normalize_counts=False, save_plots_dir='/dir/to/save')
+```
+![QR scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/6496464a-fba6-48d6-800e-acbe17b8bbcb)
 
 
 ```
 Comparison to size factors computed using r-scran::computeSumeFactors()
 ```
-![scran_normalization_readme](https://github.com/sfortma2/scranPY/assets/56206488/23621ee2-2961-414c-a514-898492364deb)
+![r-scran__comparison](https://github.com/sfortma2/scranPY/assets/56206488/8001f879-6861-463e-9718-a3960ffa7821)
 
 <p align="center">
-   <img src="https://github.com/sfortma2/scranPY/assets/56206488/430ba2fc-a758-447a-b524-8bdf6693c0cc" width="230.5" height="250">
+   <img src="https://github.com/sfortma2/scranPY/assets/56206488/0507cd00-ee5b-49ee-acc8-83fabd77dd66" width="250" height="118.3">
 </p>
+
 
 # Original R implementation
 
