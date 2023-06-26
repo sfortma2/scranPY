@@ -65,7 +65,7 @@ Comparison to size factors computed using r-scran::computeSumeFactors()
 ![r-scran__comparison](https://github.com/sfortma2/scranPY/assets/56206488/8001f879-6861-463e-9718-a3960ffa7821)
 
 <p align="center">
-   <img src="https://github.com/sfortma2/scranPY/assets/56206488/0507cd00-ee5b-49ee-acc8-83fabd77dd66" width="250" height="118.3">
+   <img src="https://github.com/sfortma2/scranPY/assets/56206488/0507cd00-ee5b-49ee-acc8-83fabd77dd66" width="500" height="236.54">
 </p>
 
 
