@@ -42,13 +42,14 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
     A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
 ```
 
-# Example
+# Example Dataset with 27,555 cells
 
 ```ruby
 import scranPY
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, plotting=True,
     lower_bound=0.4, normalize_counts=False, save_plots_dir='/dir/to/save')
 ```
+--- 3.66 mins ---
 ![CVXPY scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/491188c4-45d5-4c84-9bae-7abbcb88523c)
 
 
@@ -56,6 +57,7 @@ scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algori
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='QR', max_size=3000, 
     plotting=True, normalize_counts=False, save_plots_dir='/dir/to/save')
 ```
+--- 5.4 mins ---
 ![QR scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/6496464a-fba6-48d6-800e-acbe17b8bbcb)
 
 
