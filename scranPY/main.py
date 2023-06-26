@@ -65,46 +65,49 @@ def forge_system(ng, nc, exprs, ordering, size, ref):
     return out1, out2, out3
 
 def clean_size_factors(size_factors, num_detected, control=None, iterations=3, nmads=3, *args, **kwargs):
-    keep = size_factors > 0
-    if keep.all():
-        return size_factors
-    if len(size_factors) != len(num_detected):
-        raise ValueError("'size.factors' and 'num.detected' should be the same length")
-    X = size_factors[keep]
-    Y = num_detected[keep]
-    if len(X) < 3:
-        raise ValueError("need at least three positive values for trend fitting")
-    lower = np.median(X) > X
-    def linear_func(x, a):
-        return a * x
-    A, _ = curve_fit(linear_func, X[lower], Y[lower])
-    below = np.where(Y < A * X)[0]
-    top = below[np.argmax(Y[below])]
-    B = A[0] / Y[top] - 1 / X[top]
-    init = np.log([A[0], B])
-    lY = np.log(Y)
-    lX = np.log(X)
-    weights = np.ones(len(Y))
-    for i in range(iterations + 1):
-        try:
-            def model_func(x, logA, logB):
-                return np.log(np.exp(logA) * x + 1) - logB
-            fit, _ = curve_fit(model_func, lX, lY, p0=init, sigma=weights, **kwargs)
-        except:
-            size_factors[~keep] = np.min(size_factors[keep])
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        keep = size_factors > 0
+        if keep.all():
             return size_factors
-
-        init = fit
-        resids = np.abs(lY - model_func(lX, *fit))
-        bandwidth = max(1e-8, np.median(resids) * nmads)
-        weights = (1 - np.minimum(resids / bandwidth, 1) ** 3) ** 3
-
-    failed = num_detected[~keep]
-    coefs = fit
-    new_sf = failed / (np.exp(coefs[0]) - np.exp(coefs[1]) * failed)
-    new_sf[new_sf < 0] = np.max(X)
-    size_factors[~keep] = new_sf
-    return size_factors
+        if len(size_factors) != len(num_detected):
+            raise ValueError("'size.factors' and 'num.detected' should be the same length")
+        X = size_factors[keep]
+        Y = num_detected[keep]
+        if len(X) < 3:
+            raise ValueError("need at least three positive values for trend fitting")
+        lower = np.median(X) > X
+        def linear_func(x, a):
+            return a * x
+        A, _ = curve_fit(linear_func, X[lower], Y[lower])
+        below = np.where(Y < A * X)[0]
+        top = below[np.argmax(Y[below])]
+        B = A[0] / Y[top] - 1 / X[top]
+        init = np.log([A[0], B])
+        lY = np.log(Y)
+        lX = np.log(X)
+        weights = np.ones(len(Y))
+        for i in range(iterations + 1):
+            try:
+                def model_func(x, logA, logB):
+                    return np.log(np.exp(logA) * x + 1) - logB
+                fit, _ = curve_fit(model_func, lX, lY, p0=init, sigma=weights, **kwargs)
+            except:
+                size_factors[~keep] = np.min(size_factors[keep])
+                return size_factors
+    
+            init = fit
+            resids = np.abs(lY - model_func(lX, *fit))
+            bandwidth = max(1e-8, np.median(resids) * nmads)
+            weights = (1 - np.minimum(resids / bandwidth, 1) ** 3) ** 3
+    
+        failed = num_detected[~keep]
+        coefs = fit
+        new_sf = failed / (np.exp(coefs[0]) - np.exp(coefs[1]) * failed)
+        new_sf[new_sf < 0] = np.max(X)
+        size_factors[~keep] = new_sf
+        return size_factors
 
 def limit_cluster_size(clusters, max_size):
     if max_size is None:
@@ -180,14 +183,10 @@ def solve_quadratic_cvxpy(design, output, cur_cells, lower_bound):
     return solution
 
 def QR_decomposition(design, output):
-    import warnings
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=RuntimeWarning)
-        Q, R = np.linalg.qr(design.T.toarray())
-        #Q, R = qr(design.T.toarray())
-        y = Q.T @ output
-        coef, residuals, rank, s = np.linalg.lstsq(R, y, rcond=None)
-        return coef
+    Q, R = np.linalg.qr(design.T.toarray())
+    y = Q.T @ output
+    coef, residuals, rank, s = np.linalg.lstsq(R, y, rcond=None)
+    return coef
 
 
 def process_cluster(args):
