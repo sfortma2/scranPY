@@ -1,3 +1,2 @@
+ *.* linguist-language=Python
 
-scranPY/* linguist-vendored
-.ipynb linguist-documentation
