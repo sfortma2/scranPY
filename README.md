@@ -65,7 +65,7 @@ scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algori
 
 
 
-```
+```ruby
 %%R -i matrix -i clusters -o size_factors
 
 library(scran)
