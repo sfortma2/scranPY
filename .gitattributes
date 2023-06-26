@@ -1,4 +1,1 @@
-* linguist-vendored
-*.py linguist-vendored=true
-./scranPY/*.py linguist-vendored=true
-./tutorial/*.ipynb linguist-vendored=false
+.ipynb linguist-documentation
