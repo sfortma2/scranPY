@@ -51,25 +51,34 @@ import scranPY
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='CVXPY', max_size=3000, plotting=True,
     lower_bound=0.4, normalize_counts=False, save_plots_dir='/dir/to/save')
 ```
---- 3.66 mins ---
-![CVXPY scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/491188c4-45d5-4c84-9bae-7abbcb88523c)
+--- 3.74 mins ---
+![CVXPY scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/044bd9d0-ac56-4fc2-bac7-876d079d2b25)
+
 
 
 ```ruby
 scranPY.compute_sum_factors(adata, clusters='clusters', parallelize=True, algorithm='QR', max_size=3000, 
     plotting=True, normalize_counts=False, save_plots_dir='/dir/to/save')
 ```
---- 5.4 mins ---
-![QR scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/6496464a-fba6-48d6-800e-acbe17b8bbcb)
+--- 4.98 mins ---
+![QR scranPY_normalization](https://github.com/sfortma2/scranPY/assets/56206488/6fc329eb-f7ad-402f-b5d0-a64fb9a38426)
+
 
 
 ```
-Comparison to size factors computed using r-scran::computeSumeFactors()
+%%R -i matrix -i clusters -o size_factors
+
+library(scran)
+size_factors = computeSumFactors(SingleCellExperiment::SingleCellExperiment(list(counts=matrix)), 
+                                 clusters=clusters, min.mean=0.1)
 ```
-![r-scran__comparison](https://github.com/sfortma2/scranPY/assets/56206488/8001f879-6861-463e-9718-a3960ffa7821)
+--- 4.29 mins --- (r-scran::computeSumFactors())
+--- 6.02 mins --- (importing data to R, r-scran::computeSumFactors(), and exporting size factors)
+![r-scran__comparison](https://github.com/sfortma2/scranPY/assets/56206488/16a6bbee-1815-4016-a9db-a4b1a259ef35)
+
 
 <p align="center">
-   <img src="https://github.com/sfortma2/scranPY/assets/56206488/0507cd00-ee5b-49ee-acc8-83fabd77dd66" width="600" height="283.85">
+   <img src="https://github.com/sfortma2/scranPY/assets/56206488/ca55706c-a9d6-49b1-b77b-4145bb77dc51" width="600" height="283.85">
 </p>
 
 
