@@ -4,7 +4,7 @@ A python implementation of r-scran::computeSumFactors: normalization by deconvol
 
 # Installation
 ```
-pip install git+https://github.com/sfortma2/scranPY.git
+pip install --no-cache-dir git+https://github.com/sfortma2/scranPY.git
 ```
 Package Requirements:
    - scanpy
