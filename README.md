@@ -1,10 +1,6 @@
 # scranPY <img src="https://github.com/sfortma2/scranPY/assets/56206488/1e6ae6f9-60df-48ec-8bbe-1f07ae6e1560" width="31.67" height="60">
 
-
 A python implementation of r-scran::computeSumFactors: normalization by deconvolution for single-cell RNA-sequencing.
- 
- 
- 
 
 # Installation
 ```
@@ -14,7 +10,7 @@ Package Requirements:
    - scanpy
    - cvxpy
 
-# scranPY.compute_sum_factors
+# Basic Usage
 
 ```ruby
 compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='CVXPY', sizes=np.arange(21, 102, 5), 
@@ -46,7 +42,7 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
     A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
 ```
 
-# Basic Usage
+# Example
 
 ```ruby
 import scranPY
