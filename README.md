@@ -14,7 +14,7 @@ Package Requirements:
    - scanpy
    - cvxpy
 
-# Basic Usage
+# scranPY.compute_sum_factors
 
 ```ruby
 compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='CVXPY', sizes=np.arange(21, 102, 5), 
@@ -45,6 +45,8 @@ compute_size_factors(adata=AnnData, clusters=None, parallelize=True, algorithm='
   Returns:
     A NumPy array of size factors and stores size factors in the passed AnnData file as adata.obs['size_factors'].
 ```
+
+# Basic Usage
 
 ```ruby
 import scranPY
