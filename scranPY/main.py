@@ -72,7 +72,7 @@ def clean_size_factors(size_factors, num_detected, control=None, iterations=3, n
         if keep.all():
             return size_factors
         if len(size_factors) != len(num_detected):
-            raise ValueError("'size.factors' and 'num.detected' should be the same length")
+            raise ValueError("'size_factors' and 'num_detected' should be the same length")
         X = size_factors[keep]
         Y = num_detected[keep]
         if len(X) < 3:
