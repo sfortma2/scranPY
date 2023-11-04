@@ -216,7 +216,9 @@ def process_cluster(args):
     
 
 def compute_sum_factors(adata=AnnData, sizes=np.arange(21, 102, 5), clusters=None, min_mean=None, max_size=3000, parallelize=True, algorithm='CVXPY', stopwatch=True, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', save_plots_dir=None):
-    
+    if sp.sparse.issparse(adata.X):
+        raise ValueError("The input data is a sparse matrix which is not currently compatible. Convert your expression matrix to a dense array using: 'adata.X = adata.X.toarray()'")
+        
     start_time = time.time()
     if clusters is None:
         clusters = pd.Series(['temp'] * adata.X.shape[0], dtype='category')
