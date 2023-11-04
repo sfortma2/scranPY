@@ -89,3 +89,8 @@ L Lun, A.T., Bach, K. and Marioni, J.C., 2016. Pooling across cells to normalize
 
 see https://github.com/MarioniLab/scran for more details on the original implementation in R.
 
+# Citation
+If you use scranPY in a publication, please cite this repository using the following Zenodo DOI:
+
+Fortmann, Seth. “Sfortma2/scranpy: A Python Implementation of R-scran::computesumfactors, Normalization by Deconvolution for Single-cell Rna-sequencing”. Zenodo, November 4, 2023. https://doi.org/10.5281/zenodo.10072110.
+
