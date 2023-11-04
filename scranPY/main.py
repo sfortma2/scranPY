@@ -218,32 +218,35 @@ def process_cluster(args):
 def compute_sum_factors(adata=AnnData, sizes=np.arange(21, 102, 5), clusters=None, min_mean=None, max_size=3000, parallelize=True, algorithm='CVXPY', stopwatch=True, plotting=True, lower_bound=0.1, normalize_counts=False, log1p=False, layer='scranPY', save_plots_dir=None):
     
     start_time = time.time()
-    clusters = adata.obs[clusters].astype('category')
-
-    if clusters is not None:
+    if clusters is None:
+        clusters = pd.Series(['temp'] * adata.X.shape[0], dtype='category')
+        clusters.index = adata.obs_names
+        print('Clusters is set to None')
+    else:
+        clusters = adata.obs[clusters].astype('category')
         print('Current smallest cluster = ', clusters.value_counts().min(),' cells.')
-        if clusters.value_counts().min() < sizes.max(): 
-            if 41 > clusters.value_counts().min(): ## we want at least 5 pool sizes to compare with
-                if 30 > clusters.value_counts().min():
-                    raise ValueError("You're passing a cluster that is too small. Minimum size is 30 cells.")
-                else:
-                    print("Warning: you're passing a very small cluster that contains 40 or less cells. Pool sizes have been readjusted.")
-                    sizes=np.arange(11, clusters.value_counts().min(), 5)
-                    sizes = np.array(sizes, dtype=int)
+
+    if clusters.value_counts().min() < sizes.max(): 
+        if 41 > clusters.value_counts().min(): ## we want at least 5 pool sizes to compare with
+            if 30 > clusters.value_counts().min():
+                raise ValueError("You're passing a cluster that is too small. Minimum size is 30 cells.")
             else:
-                print("Warning: you're passing a small cluster that contains less than 100 cells. Pool sizes have been readjusted.")
-                sizes=np.arange(21, clusters.value_counts().min(), 5)
+                print("Warning: you're passing a very small cluster that contains 40 or less cells. Pool sizes have been readjusted.")
+                sizes=np.arange(11, clusters.value_counts().min(), 5)
                 sizes = np.array(sizes, dtype=int)
         else:
+            print("Warning: you're passing a small cluster that contains less than 100 cells. Pool sizes have been readjusted.")
+            sizes=np.arange(21, clusters.value_counts().min(), 5)
             sizes = np.array(sizes, dtype=int)
+    else:
+        sizes = np.array(sizes, dtype=int)
         
     ncells = adata.X.shape[0] ##1
-    if (max_size is not None) & (clusters is not None):
+    if max_size is not None:
         clusters = limit_cluster_size(clusters, max_size=max_size)
-    if clusters is not None: ##2
-        indices = np.arange(adata.X.shape[0]) if clusters is None else [np.where(clusters == c)[0] for c in np.unique(clusters)]
-    else:
-        indices = [np.arange(ncells)]
+
+    indices = [np.where(clusters == c)[0] for c in np.unique(clusters)]
+        
     print('Using max_size = ',max_size, ', clusters have been split into ', len(indices), ' clusters.')
     lib_sizes = np.sum(adata.X, axis=1) ##3
     lib_sizes = lib_sizes / np.mean(lib_sizes) 
