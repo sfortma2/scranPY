@@ -3,6 +3,7 @@ import scanpy as sc
 from anndata import AnnData
 import numpy as np
 import pandas as pd
+import scipy as sp
 import cvxpy as cp
 from scipy.sparse import csc_matrix
 from scipy.optimize import curve_fit
