@@ -57,7 +57,7 @@ def forge_system(ng, nc, exprs, ordering, size, ref):
             row_optr[index * ncells + cell] = cell
             col_optr[index * ncells + cell] = curcell
         combined /= rptr
-        combined = np.partition(combined, ngenes // 2)
+        combined = np.partition(combined, [ngenes // 2 - 1, ngenes // 2] if ngenes % 2 == 0 else ngenes // 2)
         halfway = ngenes // 2
         if ngenes % 2 == 0:
             ofptr[cell] = (combined[halfway - 1] + combined[halfway]) / 2

@@ -1,0 +1,1 @@
+Source oracle: scran::calculateSumFactors/scuttle pooledSizeFactors. Seed 42, 100 genes x 240 cells, two clusters. QR path, min.mean=0.1. R output version in scran_version.txt. Gate: atol=1e-8, rtol=1e-8. This does not validate all CVXPY constraints or small-cluster behavior.
