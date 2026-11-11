@@ -1,0 +1,10 @@
+library(scuttle)
+
+set.seed(42)
+counts<-matrix(rpois(100*240,3),100,240)
+counts<-t(t(counts)*rep(c(1,2,3,4),each=60))
+clusters<-rep(c('a','b'),each=120)
+sf<-scran::calculateSumFactors(counts,clusters=clusters,min.mean=.1)
+write.table(counts,'scran_counts.csv',sep=',',row.names=FALSE,col.names=FALSE)
+write.table(sf,'scran_factors.csv',sep=',',row.names=FALSE,col.names=FALSE)
+writeLines(paste('scuttle',packageVersion('scuttle')),'scran_version.txt')
